@@ -10,6 +10,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 
   // code citation for getopt parsing: https://docs.rs/getopt/latest/getopt/struct.Parser.html
 	// and also https://crates.io/crates/getopt
+	// copied code for this!!
 	
   let args: Vec<String> = env::args().collect();
   let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
@@ -35,17 +36,27 @@ fn main() -> Result<(), Box<dyn error::Error>> {
       },
     }
   }
+	// should I put all this parsing stuff in a function? if so, how do I return the variables / transfer ownership?
+	//  --> check 'let's get Rusty'
+	// do I have to use "E" everywhere as in the course specs? should I turn off snake_case? Or does it not matter, 
+	// since only output is scored?
+	// put in a validation for the datatypes of the variables 
+	// is there a way to validate the text file?
+	// add more comments
 
-  if h {
+  if h || s.is_empty() || e.is_empty() || b.is_empty()|| t.is_empty() {
     print_usage_msg();
+		return Ok(());
   }
 
-	let set_bits: u32 = s.parse()?;
-	let sets_sum = 2_u32.pow(set_bits);      // S == total sets
-	let block_bits: u32 = b.parse()?;
+	let set_bits: u32 = s.parse()?;								// convert the arg 's' from a string to an int and store it in 'set_bits'
+	let sets_sum = 2_u32.pow(set_bits);      			// S == total sets
+	let block_bits: u32 = b.parse()?;							// convert the arg 'b' from a string to an int and store it in 'block_bits'
   let block_size = 2_u32.pow(block_bits);      // B == total words per block
-  let lines: u32 = e.parse()?;
+  let lines: u32 = e.parse()?;								// convert the arg 'e' from a string to an int and store it in 'lines'
 	let cache_size: u32 = sets_sum * block_size * lines;
+
+	// do I have to add a trim function to get rid of white spaces?
 
   println!("number of set_bits is: {}   number of sets is: {}", set_bits, sets_sum);  
 	println!("number of block_bits is: {}   block size is: {}", block_bits, block_size );
@@ -97,7 +108,7 @@ struct Cache {
 */
 
 // Note: review direct-mapped cache --> relevance to E=1? does it change the logic?
-// Note: am I also supposed to use 'getopt' to parse trace file data?
+// Note: am I also supposed to use 'getopt' to parse trace file data? if not, how??
 
 /* user gives you 's', 'E', 'b', and a trace file
   you calculate total # available lines in cache: 
