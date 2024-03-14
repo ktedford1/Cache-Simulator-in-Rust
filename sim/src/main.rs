@@ -40,9 +40,11 @@ fn main() -> Result<(), Box<dyn error::Error>> {
 	//  --> check 'let's get Rusty'
 	// do I have to use "E" everywhere as in the course specs? should I turn off snake_case? Or does it not matter, 
 	// since only output is scored?
-	// put in a validation for the datatypes of the variables 
+	// put in a validation for the datatypes of the variables, e.g. no negative numbers! no zero! or?? can b = 0??
 	// is there a way to validate the text file?
 	// add more comments
+
+	// don't forget to deal with verbose case!! see Lab exercise from Topic 4 or 6
 
   if h || s.is_empty() || e.is_empty() || b.is_empty()|| t.is_empty() {
     print_usage_msg();
@@ -85,6 +87,7 @@ fn print_usage_msg() {
 
 
 // note: determine how big the block, tag, and age fields have to be
+// I think these structs are nested: how to write this??
 /*
 struct Line {
   block: u32,
@@ -113,16 +116,28 @@ struct Cache {
 /* user gives you 's', 'E', 'b', and a trace file
   you calculate total # available lines in cache: 
       1 line holds 1 block 'B' containing 2^b bytes per line
-      so we need to know: E lines per set * S (2^s) sets
-  you also need to know how many sets there are (2^s)
+      Therefore: E lines per set * S (2^s) sets == total # of blocks
+			Therefore: E lines per set * S (2^s) sets * B (2^b) bytes == total # of bytes
   you initialize the 'Set' and 'Cache' arrays with the values of 'E' and 'S'
- trace file gives you an address 
- you get 'b' and calculate block size 'B'
- you calculate the tag 'tag' and the set index 's' and initialize a struct for Line with this new address:
-    it has a set index 's' that goes in struct 'Cache'
-    it goes in whatever line is empty??
-    you update the validity tag of that line
-    you update the recency tag of that line (how??? is this a date stamp??)
+
+how to get the set index and tag:
+	trace file gives you an address in hexadecimal
+	convert it to binary, call it "x", then right-shift "x" by "b" bits (discard the block offset)
+	apparently, number modulo max value of a number of bits returns those bits
+	citation: https://de.mathworks.com/matlabcentral/answers/625063-how-to-divide-8-bit-binary-into-two-4-bit
+	(see answer from Xavier)
+	then calculate: 	x % S to get the set index (the new least significant 's' bits)
+	then right-shift "x" again by 's' bits to get rid of them, and the remaining number is the tag index
+
+then initialize a struct for Cache with this new address:
+    in struct Cache: add a set index 's'
+    in struct Set (inside Cache):
+				add a line:
+					add a block size (2^b)
+					switch validity tag to 1  (??should this be an enum? or a bool?)
+					add a tag index
+					add a date stamp
+
  */
 
 /* fn operateFlags(cache, trace file):
