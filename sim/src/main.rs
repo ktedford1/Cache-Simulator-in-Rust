@@ -1,13 +1,15 @@
 use std::env;
 use getopt::Opt;
 use std::error::Error;
+use std::ops::Div;
+use std::ops::Shr;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
   let args: Vec<String> = env::args().collect();
 	let (set_bits, lines, block_bits, trace_file) = parse_args(&args)?;
 
-	let sets_sum = 2_u32.pow(set_bits);      			// S == total sets
+	let sets_sum = 2_u32.pow(set_bits);							// S == total sets
   let block_size = 2_u32.pow(block_bits);      		// B == total words per block
 	let cache_size: u32 = sets_sum * block_size * lines;
 
@@ -16,6 +18,15 @@ fn main() -> Result<(), Box<dyn Error>> {
   println!("there are {} sets, {} lines per set, and {} bytes per block;", sets_sum, lines, block_size);
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
+
+/*  Open the text file and loop through each line:
+		split the line between the operation letter and the hex address, and store them in 2 variables ('operation' and 'hex_address')
+		does 'operation' == 'I' ? if so, break
+		convert the hex_address to a binary_address
+		tag, set = process_hex_address(&binary_address, &set_bits, &block_bits)
+		update_cache(&cache, operation, &tag, &set, &lines)
+
+*/
 
   // printsln!(“Hits: {0} Misses: {1} Evictions: {2}, hits, misses, evictions);
 	Ok(())
@@ -30,7 +41,7 @@ fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Err
   let mut s = String::new();		// set bits
   let mut e = String::new();		// total lines per set
   let mut b = String::new();		// block bits
-  let mut t = String::new();		// filepath to text file of Valgrind memory trace
+  let mut t = String::new();		// filepath to text file of Valgrind memory trace; add valid. to make sure it's a real file??
 
   loop {
     match opts.next().transpose()?{
@@ -47,9 +58,9 @@ fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Err
     }
   }
 
-	let s: u32 = s.parse()?;								// convert the arg 's' from a string to an int
-	let e: u32 = e.parse()?;
-	let b: u32 = b.parse()?;							// convert the arg 'b' from a string to an int
+	let s: u32 = s.parse()?;			// convert the arg 's' from a string to an int
+	let e: u32 = e.parse()?;			// convert the arg 'e' from a string to an int
+	let b: u32 = b.parse()?;			// convert the arg 'b' from a string to an int
 
   if h || s < 1 || e < 1 || t.is_empty() {
     print_usage_msg();
@@ -70,14 +81,16 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-// Note: why do the mention the E=1 direct-mapped cache? am I supposed to do something with this
+// Note: why do they mention the E=1 direct-mapped cache? am I supposed to do something with this
 // or is it just to help us understand things??
 
-/* fn operateFlags(cache, trace file):
+fn process_binary_address(&binary_address, &tag, &set, &lines) -> Result<(u32, u32), Box<dyn Error>> {
 
-
-
-    */
+		tag_plus_set = right shift binary_addr >> &block_bits;		// can I right shift binary or does it have to be an integer?
+		tag = tag_plus_set / &set_bits														// store the quotient as tag
+		set_index = tag_plus_set % &set_bits											// store the remainder as set_index
+		(tag, set_index)
+}
 
 
 /* fn operateCache(cache, address) -> returns nothing (but updates HIT, MISS and EVICTION counts):
