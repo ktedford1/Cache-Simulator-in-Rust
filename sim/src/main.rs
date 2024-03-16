@@ -1,17 +1,17 @@
 use std::env;
 use getopt::Opt;
 use std::error::Error;
-use std::ops::Div;
-use std::ops::Shr;
+//use std::ops::Div;
+//use std::ops::Shr;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
   let args: Vec<String> = env::args().collect();
 	let (set_bits, lines, block_bits, trace_file) = parse_args(&args)?;
 
-	let sets_sum = 2_u32.pow(set_bits);							// S == total sets
-  let block_size = 2_u32.pow(block_bits);      		// B == total words per block
-	let cache_size: u32 = sets_sum * block_size * lines;
+	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
+  let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
+	let cache_size: u32 = sets_sum * lines * block_size;
 
   println!("number of set_bits is: {}   number of sets is: {}", set_bits, sets_sum);  
 	println!("number of block_bits is: {}   block size is: {}", block_bits, block_size );
@@ -19,22 +19,39 @@ fn main() -> Result<(), Box<dyn Error>> {
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
 
-/*  Open the text file and loop through each line:
-		split the line between the operation letter and the hex address, and store them in 2 variables ('operation' and 'hex_address')
+/*  
+	let mut hits, misses, evictions == 0
+
+	open text file
+	while text file lines not empty:
+		get a line
+		split the line between the operation letter and the hex address, and store them
+			let mut operation: String = ..
+			let mut hex_address: String = ..
 		does 'operation' == 'I' ? if so, break
 		convert the hex_address to a binary_address
-		tag, set = process_hex_address(&binary_address, &set_bits, &block_bits)
-		update_cache(&cache, operation, &tag, &set, &lines)
+		tag, set_index = process_hex_address(&binary_address, &set_bits, &block_bits)
+		let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
 
+		if operation == L or S and attempt == HIT: hits += 1
+		if operation == L or S and attempt == MISS: misses += 1
+		if operation == M and attempt == HIT: hits += 2
+		if operation == M and attempt == MISS: misses += 1 and hits += 1
+		if eviction: evictions += 1
+
+	end of loop
+
+	println!(“Hits: {0} Misses: {1} Evictions: {2}, hits, misses, evictions);
 */
 
-  // printsln!(“Hits: {0} Misses: {1} Evictions: {2}, hits, misses, evictions);
 	Ok(())
 }
 
+// Note: why do they mention the E=1 direct-mapped cache? am I supposed to do something with this
+// or is it just to help us understand things??
+
 #[allow(unused)]
 fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Error>> {
-
 	let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
   let mut h = false;						// help flag
   let mut v = false;						// verbose flag
@@ -81,34 +98,47 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-// Note: why do they mention the E=1 direct-mapped cache? am I supposed to do something with this
-// or is it just to help us understand things??
-
+/*
 fn process_binary_address(&binary_address, &tag, &set, &lines) -> Result<(u32, u32), Box<dyn Error>> {
 
 		tag_plus_set = right shift binary_addr >> &block_bits;		// can I right shift binary or does it have to be an integer?
 		tag = tag_plus_set / &set_bits														// store the quotient as tag
 		set_index = tag_plus_set % &set_bits											// store the remainder as set_index
-		(tag, set_index)
+		Ok((tag, set_index))
 }
 
+fn update_cache(&cache, &tag, &set, &lines)
+   
+	 		look in the cache at that set and check if it has space:
+				loop through all the validity bits: 
+					is any validity bit == 0 ?
+						y -- cache_has_space
+						n -- chache_is_full
+					
+					if cache_has_space:
+						loop through all the validity_bits == 1:
+							is this any tag that matches this one? --> 			// check the logic here - something is not quite right
+								update the recency tag												// if the addresses have no tag - then what?
+								return "HIT"
+							is this tag not there? -->
+								add this tag to the set with the set_index
+								update the validity tag from 0 to 1
+								update the recency tag
+							return "MISS"
 
-/* fn operateCache(cache, address) -> returns nothing (but updates HIT, MISS and EVICTION counts):
-    calls the fn checkCache
+						if cache_is_full:											// note: duplication of code here - fix the flow!!
+							call the eviction function					// it should kick one out according to LRU
+							add this tag to the set 						// look for the validity tag == 0
+							update the validity tag from 0 to 1
+							update the recency tag
+							return "MISS"
+					
 
-    if (fn checkCache(cache, address)) == HIT: update the HIT count
-    if (fn checkCache(cache, address)) == MISS: update the MISS count and insert the address
-    if (fn checkCache(cache, address)) == FULL: update the MISS count, update the EVICTION count and call the evict function
-*/
+// note: figure out what to do if there is no tag, as in the coursework sample
+// there were 8 bits, 4 for the block, 4 for the set, so the tag had no bits
 
-/* fn checkCache(cache, address) -> returns a string:
 
-if address is there: update the recency and return HIT
-if address is NOT there and set has room:: (insert the address???) return MISS
-if address is NOT there and set is full: return FULL
-*/
-
-/* fn evict(cache, address, policy) -> returns nothing (but modifies the cache)
+fn evict(cache, address, policy) -> returns nothing (but modifies the cache)
 
   if policy == FIFO:
     find the address with the oldest age tag
@@ -119,7 +149,6 @@ if address is NOT there and set is full: return FULL
 
 NOTE: if the policy will be “FIFO”, then the age tag is used
 NOTE: if the policy will be “LRU”, then the recency tag is used
-
 NOTE: tutor says that we only need to do 'LRU' ????
 
 */
