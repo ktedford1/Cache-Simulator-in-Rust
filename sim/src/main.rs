@@ -1,8 +1,8 @@
 use std::env;
 use getopt::Opt;
 use std::error::Error;
-//use std::ops::Div;
-//use std::ops::Shr;
+//use std::ops::Div;		// necessary for the right shift operation??
+//use std::ops::Shr;		// necessary for right shift or for modulo??
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
@@ -19,27 +19,41 @@ fn main() -> Result<(), Box<dyn Error>> {
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
  
-	let mut hits, misses, evictions == 0;
 
-	open text file
-	while text file lines not empty:
-		get a line
-		split the line between the operation letter and the hex address, trim whitespace, and store them
-			let mut operation: String = ..
-			let mut hex_address: String = ..
-		does 'operation' == 'I' ? if so, break
-		tag, set_index = process_address(&hex_address, &set_bits, &block_bits)
-		let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
+// am I supposed to cite the class lab for this code?
 
-		if operation == L or S and attempt == HIT: hits += 1
-		if operation == L or S and attempt == MISS: misses += 1
-		if operation == M and attempt == HIT: hits += 2
-		if operation == M and attempt == MISS: misses += 1 and hits += 1
-		if eviction: evictions += 1
+ if let Ok(file) = File::open(filename) {
+        let reader = io::BufReader::new(file);
+				let mut hits, misses, evictions == 0;
+        for line in reader.lines() {
+            if let Ok(line_content) = line {
+                split the line between the operation letter and the hex address
+								trim white space
+								let mut operation: String = ..
+								let mut hex_address: String = .. {
+                if operation == "I"
+											break}
+								tag, set_index = process_address(&hex_address, &set_bits, &block_bits)
+								let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
+								if operation == L or S and attempt == HIT: hits += 1
+								if operation == L or S and attempt == MISS: misses += 1
+								if operation == M and attempt == HIT: hits += 2
+								if operation == M and attempt == MISS: misses += 1 and hits += 1
+								if EVICTION: evictions += 1
 
-	end of loop
+                    if verbose {
+                        println!("{}:{}: {}", operation, hex_address, attempt (has to also include eviction!!));
+                    }
+                }
+            }
+        }
 
-	println!(“Hits: {0} Misses: {1} Evictions: {2}, hits, misses, evictions);
+        println!(“Hits: {} Misses: {} Evictions: {}, hits, misses, evictions);
+    } else {
+        eprintln!("Error opening the file '{}'", filename);
+    
+note: for stats, count the operations:L and S each count for 1, M counts for 2
+
 */
 
 	Ok(())
@@ -101,8 +115,9 @@ fn process_address(&hex_address, &block_bits, &set_bits) -> Result<(u32, u32), B
 		Ok((tag, set_index))
 }
 
+/*
 fn update_cache(&cache, &tag, &set, &lines) -> String 
-   
+
 	look in the correct set_index
 		look through all the lines in the set:
 			if validity bits == 1 and already_there_tag == self.tag:
@@ -121,8 +136,8 @@ fn update_cache(&cache, &tag, &set, &lines) -> String
 		update the recency, validity, set_index
 		return MISS and EVICTIONS		// can I return 1 or 2 strings from this function? or do I have to specify at the top and stick to it?
 
-/*
-fn evict(&cache, &tag, &set, &lines)  -> returns tag of oldest entry
+
+fn evict_tag(&cache, &tag, &set, &lines)  -> returns tag of oldest entry
 
 	let current_time = (current_time stamp);
 	let mut age = 0;
@@ -134,7 +149,8 @@ fn evict(&cache, &tag, &set, &lines)  -> returns tag of oldest entry
 			if block_age > age:
 				age = block_age
 				oldest_tag = tag
-		
+	
+	return oldest_tag
 
 */
 
