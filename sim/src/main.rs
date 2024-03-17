@@ -18,19 +18,17 @@ fn main() -> Result<(), Box<dyn Error>> {
   println!("there are {} sets, {} lines per set, and {} bytes per block;", sets_sum, lines, block_size);
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
-
-/*  
-	let mut hits, misses, evictions == 0
+ 
+	let mut hits, misses, evictions == 0;
 
 	open text file
 	while text file lines not empty:
 		get a line
-		split the line between the operation letter and the hex address, and store them
+		split the line between the operation letter and the hex address, trim whitespace, and store them
 			let mut operation: String = ..
 			let mut hex_address: String = ..
 		does 'operation' == 'I' ? if so, break
-		convert the hex_address to a binary_address
-		tag, set_index = process_hex_address(&binary_address, &set_bits, &block_bits)
+		tag, set_index = process_address(&hex_address, &set_bits, &block_bits)
 		let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
 
 		if operation == L or S and attempt == HIT: hits += 1
@@ -47,8 +45,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-// Note: why do they mention the E=1 direct-mapped cache? am I supposed to do something with this
-// or is it just to help us understand things??
 
 #[allow(unused)]
 fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Error>> {
@@ -98,58 +94,47 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-/*
-fn process_binary_address(&binary_address, &tag, &set, &lines) -> Result<(u32, u32), Box<dyn Error>> {
-
-		tag_plus_set = right shift binary_addr >> &block_bits;		// can I right shift binary or does it have to be an integer?
-		tag = tag_plus_set / &set_bits														// store the quotient as tag
-		set_index = tag_plus_set % &set_bits											// store the remainder as set_index
+fn process_address(&hex_address, &block_bits, &set_bits) -> Result<(u32, u32), Box<dyn Error>> {
+		let tag_and_set = hex_address >> &block_bits;
+		let tag = tag_and_set / &set_bits;														// store the quotient as tag
+		let set_index = tag_and_set % &set_bits;											// store the remainder as set_index
 		Ok((tag, set_index))
 }
 
-fn update_cache(&cache, &tag, &set, &lines)
+fn update_cache(&cache, &tag, &set, &lines) -> String 
    
-	 		look in the cache at that set and check if it has space:
-				loop through all the validity bits: 
-					is any validity bit == 0 ?
-						y -- cache_has_space
-						n -- chache_is_full
-					
-					if cache_has_space:
-						loop through all the validity_bits == 1:
-							is this any tag that matches this one? --> 			// check the logic here - something is not quite right
-								update the recency tag												// if the addresses have no tag - then what?
-								return "HIT"
-							is this tag not there? -->
-								add this tag to the set with the set_index
-								update the validity tag from 0 to 1
-								update the recency tag
-							return "MISS"
+	look in the correct set_index
+		look through all the lines in the set:
+			if validity bits == 1 and already_there_tag == self.tag:
+				update recency
+				return HIT (quit the function)
 
-						if cache_is_full:											// note: duplication of code here - fix the flow!!
-							call the eviction function					// it should kick one out according to LRU
-							add this tag to the set 						// look for the validity tag == 0
-							update the validity tag from 0 to 1
-							update the recency tag
-							return "MISS"
-					
+		loop through all the lines in the set:
+			if validity bits == 0		// cache still has a space
+					add this tag and set_index
+					update the recency thing
+					change the validity bit to 1
+					return MISS (quit the function)
+		
+		call eviction function and get the tag of the oldest entry
+		change the oldest_tag to this self.tag
+		update the recency, validity, set_index
+		return MISS and EVICTIONS		// can I return 1 or 2 strings from this function? or do I have to specify at the top and stick to it?
 
-// note: figure out what to do if there is no tag, as in the coursework sample
-// there were 8 bits, 4 for the block, 4 for the set, so the tag had no bits
+/*
+fn evict(&cache, &tag, &set, &lines)  -> returns tag of oldest entry
 
+	let current_time = (current_time stamp);
+	let mut age = 0;
+	let oldest_tag = 0;
 
-fn evict(cache, address, policy) -> returns nothing (but modifies the cache)
-
-  if policy == FIFO:
-    find the address with the oldest age tag
-    change it to the new address and update it’s age tag
-  if policy == LRU:
-    find the address with the oldest recency tag
-    change it to the new address and update it’s recency tag
-
-NOTE: if the policy will be “FIFO”, then the age tag is used
-NOTE: if the policy will be “LRU”, then the recency tag is used
-NOTE: tutor says that we only need to do 'LRU' ????
+	look in the correct set_index
+		look through all the lines in the set:
+			block_age = current_time - recency info
+			if block_age > age:
+				age = block_age
+				oldest_tag = tag
+		
 
 */
 
