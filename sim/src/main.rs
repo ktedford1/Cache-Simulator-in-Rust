@@ -3,6 +3,7 @@ use getopt::Opt;
 use std::error::Error;
 //use std::ops::Div;		// necessary for the right shift operation??
 //use std::ops::Shr;		// necessary for right shift or for modulo??
+// use sim::Cache;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
@@ -18,14 +19,16 @@ fn main() -> Result<(), Box<dyn Error>> {
   println!("there are {} sets, {} lines per set, and {} bytes per block;", sets_sum, lines, block_size);
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
+
+	let hex_address: u32 = 0x3cdb;
+	let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
+	println!("from the main function, the tag is: {} and the set_index is: {}", tag, set_index);
  
-
-// am I supposed to cite the class lab for this code?
-
+/*
  if let Ok(file) = File::open(filename) {
         let reader = io::BufReader::new(file);
 				let mut hits, misses, evictions == 0;
-        for line in reader.lines() {
+        for line in reader.lines() { 
             if let Ok(line_content) = line {
                 split the line between the operation letter and the hex address
 								trim white space
@@ -85,15 +88,15 @@ fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Err
     }
   }
 
-	let s: u32 = s.parse()?;			// convert the arg 's' from a string to an int
-	let e: u32 = e.parse()?;			// convert the arg 'e' from a string to an int
-	let b: u32 = b.parse()?;			// convert the arg 'b' from a string to an int
+	let s: i32 = s.parse()?;			// convert the arg 's' from a string to an int
+	let e: i32 = e.parse()?;			// convert the arg 'e' from a string to an int
+	let b: i32 = b.parse()?;			// convert the arg 'b' from a string to an int
 
   if h || s < 1 || e < 1 || t.is_empty() {
     print_usage_msg();
 		return Err("other problem".into());
   }
-	Ok((s, e, b, t))
+	Ok((s as u32, e as u32, b as u32, t))
 }
 
 fn print_usage_msg() {
@@ -108,11 +111,14 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-fn process_address(&hex_address, &block_bits, &set_bits) -> Result<(u32, u32), Box<dyn Error>> {
-		let tag_and_set = hex_address >> &block_bits;
-		let tag = tag_and_set / &set_bits;														// store the quotient as tag
-		let set_index = tag_and_set % &set_bits;											// store the remainder as set_index
-		Ok((tag, set_index))
+fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
+
+		let tag_and_set = hex_address >> block_bits;
+		let sets = 2_u32.pow(*set_bits);	
+		let tag = tag_and_set / sets;														// store the quotient as tag
+		let set_index = tag_and_set % sets;											// store the remainder as set_index
+		println!("the tag is: {} and the set_index is: {}", tag, set_index);
+		(tag, set_index)
 }
 
 /*
