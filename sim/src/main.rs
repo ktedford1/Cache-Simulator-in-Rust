@@ -1,8 +1,6 @@
 use std::env;
 use getopt::Opt;
 use std::error::Error;
-//use std::ops::Div;		// necessary for the right shift operation??
-//use std::ops::Shr;		// necessary for right shift or for modulo??
 // use sim::Cache;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -20,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 	println!("therefore, the cache size in bytes is: {}", cache_size);
 	println!("text file is: {}", trace_file);
 
-	let hex_address: u32 = 0x3cdb;
+	let hex_address: u32 = 0x00600aa0;
 	let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
 	println!("from the main function, the tag is: {} and the set_index is: {}", tag, set_index);
  
@@ -114,7 +112,12 @@ fn print_usage_msg() {
 fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
 
 		let tag_and_set = hex_address >> block_bits;
+		println!("tag_and_set is: {}", tag_and_set);
 		let sets = 2_u32.pow(*set_bits);	
+		println!("sets is: {}", sets);
+
+		// if you want to separate the number 4 bits from the right, you have to divide by 2^4 or 16
+		// if you want to separate the number 8 bits from the right, you have to divide by 2^8 or 256 etc
 		let tag = tag_and_set / sets;														// store the quotient as tag
 		let set_index = tag_and_set % sets;											// store the remainder as set_index
 		println!("the tag is: {} and the set_index is: {}", tag, set_index);
