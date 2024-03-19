@@ -1,7 +1,10 @@
 use std::env;
 use getopt::Opt;
 use std::error::Error;
-// use sim::Cache;
+
+// mod cache ??
+// use sim::cache::Cache ??
+
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
@@ -110,7 +113,7 @@ fn print_usage_msg() {
 }
 
 fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
-
+// add error handling to this function incase the hex address is bogus
 		let tag_and_set = hex_address >> block_bits;
 		println!("tag_and_set is: {}", tag_and_set);
 		let sets = 2_u32.pow(*set_bits);	
@@ -125,41 +128,37 @@ fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, 
 }
 
 /*
-fn update_cache(&cache, &tag, &set, &lines) -> String 
+fn update_cache(cache: &cache, new_tag: &tag, new_set: &set, total_lines: &lines) -> String 
 
-	look in the correct set_index
-		look through all the lines in the set:
-			if validity bits == 1 and already_there_tag == self.tag:
-				update recency
-				return HIT (quit the function)
+	update the set.access_counter += 1;
+		loop through all the lines in the set:
+			if valid == 1 and set.tag == new_tag:				// when/how do I use self. ?
+				recency = access_counter;
+				return HIT and exit
 
 		loop through all the lines in the set:
-			if validity bits == 0		// cache still has a space
-					add this tag and set_index
-					update the recency thing
-					change the validity bit to 1
-					return MISS (quit the function)
+			if valid == 0:													// cache still has a space
+					set.tag = new_tag
+					recency = access_counter
+					valid = 1
+					return MISS and exit
 		
-		call eviction function and get the tag of the oldest entry
-		change the oldest_tag to this self.tag
-		update the recency, validity, set_index
-		return MISS and EVICTIONS		// can I return 1 or 2 strings from this function? or do I have to specify at the top and stick to it?
+		lru_tag = evict_tag(&cache, &set, &lines)
+		loop through all the lines in the set:
+			if line.tag == lru_tag:
+				line.tag = lru_tag
+				line.recency = 1;
+		return MISS and EVICTION		// HOW to return a variable number of results?? with an enum???
 
 
-fn evict_tag(&cache, &tag, &set, &lines)  -> returns tag of oldest entry
+fn evict_tag(&cache, &set, &lines)  -> returns smallest_recency_tag
 
-	let current_time = (current_time stamp);
-	let mut age = 0;
-	let oldest_tag = 0;
-
-	look in the correct set_index
-		look through all the lines in the set:
-			block_age = current_time - recency info
-			if block_age > age:
-				age = block_age
-				oldest_tag = tag
+	smallest_recency_tag = set.line[0].recency
+	loop through all the lines in the set:
+			if line.recency < smallest_recency_tag:
+				smallest_recency_tag = line.recency
 	
-	return oldest_tag
+	return smallest_recency_tag
 
 */
 
