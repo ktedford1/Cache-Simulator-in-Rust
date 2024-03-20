@@ -18,7 +18,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 	//let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
 
-	//const FILENAME: &str = "traces/poem.txt";
 	let _d = read_file_by_line(&trace_file);
 
 	Ok(())
@@ -30,15 +29,17 @@ fn read_file_by_line(filepath: &str) -> Result<(), Box<dyn Error>> {
 	let reader = BufReader::new(trace_line);
 
 	for line in reader.lines() {
-		println!("{}", line?);
+		// println!("{}", line?);
+		let unwrapped_line = line?;
+		let info:Vec<&str> = unwrapped_line.trim().split_whitespace().collect();
+		let operation = info[0];
+		let hex_address = info[1];
+		println!("The operation is {} and the hex address is {}", operation, hex_address);
 	}
 	Ok(())
 }
 
-
 /*
- if let Ok(file) = File::open(filename) {
-        let reader = io::BufReader::new(file);
 				let mut hits, misses, evictions == 0;
         for line in reader.lines() { 
             if let Ok(line_content) = line {
