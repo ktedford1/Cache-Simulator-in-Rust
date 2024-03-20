@@ -1,9 +1,8 @@
 use std::env;
+use std::fs::File;
 use getopt::Opt;
 use std::error::Error;
-
-// mod cache ??
-// use sim::cache::Cache ??
+use std::io::{BufReader, BufRead};
 
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -14,17 +13,29 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
   let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
 	let cache_size: u32 = sets_sum * lines * block_size;
+	println!("trace file is: {}", trace_file);
+	println!("sets_sum, block_size, and cache_size are: {}, {}, {}", sets_sum, block_size, cache_size);
 
-  println!("number of set_bits is: {}   number of sets is: {}", set_bits, sets_sum);  
-	println!("number of block_bits is: {}   block size is: {}", block_bits, block_size );
-  println!("there are {} sets, {} lines per set, and {} bytes per block;", sets_sum, lines, block_size);
-	println!("therefore, the cache size in bytes is: {}", cache_size);
-	println!("text file is: {}", trace_file);
+	//let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
 
-	let hex_address: u32 = 0x00600aa0;
-	let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
-	println!("from the main function, the tag is: {} and the set_index is: {}", tag, set_index);
- 
+	//const FILENAME: &str = "traces/poem.txt";
+	let _d = read_file_by_line(&trace_file);
+
+	Ok(())
+}
+
+fn read_file_by_line(filepath: &str) -> Result<(), Box<dyn Error>> {
+
+	let trace_line = File::open(filepath)?;
+	let reader = BufReader::new(trace_line);
+
+	for line in reader.lines() {
+		println!("{}", line?);
+	}
+	Ok(())
+}
+
+
 /*
  if let Ok(file) = File::open(filename) {
         let reader = io::BufReader::new(file);
@@ -60,9 +71,6 @@ note: for stats, count the operations:L and S each count for 1, M counts for 2
 
 */
 
-	Ok(())
-}
-
 
 #[allow(unused)]
 fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Error>> {
@@ -93,6 +101,8 @@ fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Err
 	let e: i32 = e.parse()?;			// convert the arg 'e' from a string to an int
 	let b: i32 = b.parse()?;			// convert the arg 'b' from a string to an int
 
+// note:it's crashing on "cargo run -- -h" and -v -- check for other potential errors
+
   if h || s < 1 || e < 1 || t.is_empty() {
     print_usage_msg();
 		return Err("other problem".into());
@@ -112,7 +122,7 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
+/*fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
 // add error handling to this function incase the hex address is bogus
 		let tag_and_set = hex_address >> block_bits;
 		println!("tag_and_set is: {}", tag_and_set);
@@ -125,7 +135,7 @@ fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, 
 		let set_index = tag_and_set % sets;											// store the remainder as set_index
 		println!("the tag is: {} and the set_index is: {}", tag, set_index);
 		(tag, set_index)
-}
+}*/
 
 /*
 fn update_cache(cache: &cache, new_tag: &tag, new_set: &set, total_lines: &lines) -> String 
