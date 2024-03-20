@@ -3,6 +3,7 @@ use std::fs::File;
 use getopt::Opt;
 use std::error::Error;
 use std::io::{BufReader, BufRead};
+use std::num::ParseIntError;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -37,44 +38,17 @@ fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result
 				continue
 			}
 		let hex_address = info[1].split(',').next().unwrap();
-		println!("{}{}", operation, hex_address);
-
-		let binary_value = convert_to_binary_from_hex(hex_address);
-		let binary_value: u64 = binary_value.parse()?;
-    println!("Hex: {} Binary:{}", hex_address, binary_value);
-
+		print!("Hex_address: {}  ", hex_address);
+		let binary_value = hex_to_64_bit_binary(&hex_address).expect("trouble");
 		let (tag, set_index) = process_address(&binary_value, &block_bits, &set_bits);
-
 	}
+
 	Ok(())
 }
 
-fn convert_to_binary_from_hex(hex: &str) -> String {
-    hex.chars().map(to_binary).collect()
+fn hex_to_64_bit_binary(hex_address: &str) -> Result<u64, ParseIntError> {
+	u64::from_str_radix(hex_address, 16) 
 }
-
-fn to_binary(c: char) -> &'static str {
-    match c {
-        '0' => "0000",
-        '1' => "0001",
-        '2' => "0010",
-        '3' => "0011",
-        '4' => "0100",
-        '5' => "0101",
-        '6' => "0110",
-        '7' => "0111",
-        '8' => "1000",
-        '9' => "1001",
-        'A' => "1010",
-        'B' => "1011",
-        'C' => "1100",
-        'D' => "1101",
-        'E' => "1110",
-        'F' => "1111",
-        _ => "",
-    }
-}
-
 
 /*
 				let mut hits, misses, evictions == 0;
@@ -156,12 +130,11 @@ fn print_usage_msg() {
 fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
 
 		let tag_and_set = binary_value >> block_bits;
-		println!("tag_and_set is {}, binary_value is {}, block_bits is {}", tag_and_set, binary_value, block_bits);
 		let sets = 2_u32.pow(*set_bits as u32);	
 		let sets = sets as u64;
 		let tag = tag_and_set / sets;														// store the quotient as tag
 		let set_index = tag_and_set % sets;											// store the remainder as set_index
-		println!("the tag is: {} and the set_index is: {}", tag, set_index);
+		println!("tag: {} set: {}", tag, set_index);
 		(tag, set_index)
 }
 
