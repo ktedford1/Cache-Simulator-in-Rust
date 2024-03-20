@@ -17,38 +17,68 @@ fn main() -> Result<(), Box<dyn Error>> {
 	println!("sets_sum, block_size, and cache_size are: {}, {}, {}", sets_sum, block_size, cache_size);
 
 	//let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
-
-	let _d = read_file_by_line(&trace_file);
+	let block_bits = block_bits as u64;
+	let set_bits = set_bits as u64;
+	let _d = read_file_by_line(&trace_file, &block_bits, &set_bits);
 
 	Ok(())
 }
 
-fn read_file_by_line(filepath: &str) -> Result<(), Box<dyn Error>> {
+fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
 
 	let trace_line = File::open(filepath)?;
 	let reader = BufReader::new(trace_line);
 
 	for line in reader.lines() {
-		// println!("{}", line?);
 		let unwrapped_line = line?;
 		let info:Vec<&str> = unwrapped_line.trim().split_whitespace().collect();
 		let operation = info[0];
-		let hex_address = info[1];
-		println!("The operation is {} and the hex address is {}", operation, hex_address);
+			if operation == "I" {
+				continue
+			}
+		let hex_address = info[1].split(',').next().unwrap();
+		println!("{}{}", operation, hex_address);
+
+		let binary_value = convert_to_binary_from_hex(hex_address);
+		let binary_value: u64 = binary_value.parse()?;
+    println!("Hex: {} Binary:{}", hex_address, binary_value);
+
+		let (tag, set_index) = process_address(&binary_value, &block_bits, &set_bits);
+
 	}
 	Ok(())
 }
 
+fn convert_to_binary_from_hex(hex: &str) -> String {
+    hex.chars().map(to_binary).collect()
+}
+
+fn to_binary(c: char) -> &'static str {
+    match c {
+        '0' => "0000",
+        '1' => "0001",
+        '2' => "0010",
+        '3' => "0011",
+        '4' => "0100",
+        '5' => "0101",
+        '6' => "0110",
+        '7' => "0111",
+        '8' => "1000",
+        '9' => "1001",
+        'A' => "1010",
+        'B' => "1011",
+        'C' => "1100",
+        'D' => "1101",
+        'E' => "1110",
+        'F' => "1111",
+        _ => "",
+    }
+}
+
+
 /*
 				let mut hits, misses, evictions == 0;
-        for line in reader.lines() { 
-            if let Ok(line_content) = line {
-                split the line between the operation letter and the hex address
-								trim white space
-								let mut operation: String = ..
-								let mut hex_address: String = .. {
-                if operation == "I"
-											break}
+  
 								tag, set_index = process_address(&hex_address, &set_bits, &block_bits)
 								let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
 								if operation == L or S and attempt == HIT: hits += 1
@@ -123,20 +153,20 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
-/*fn process_address(hex_address: &u32, block_bits: &u32, set_bits:&u32) -> (u32, u32) {
-// add error handling to this function incase the hex address is bogus
-		let tag_and_set = hex_address >> block_bits;
-		println!("tag_and_set is: {}", tag_and_set);
-		let sets = 2_u32.pow(*set_bits);	
-		println!("sets is: {}", sets);
+fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
 
-		// if you want to separate the number 4 bits from the right, you have to divide by 2^4 or 16
-		// if you want to separate the number 8 bits from the right, you have to divide by 2^8 or 256 etc
+		let tag_and_set = binary_value >> block_bits;
+		println!("tag_and_set is {}, binary_value is {}, block_bits is {}", tag_and_set, binary_value, block_bits);
+		let sets = 2_u32.pow(*set_bits as u32);	
+		let sets = sets as u64;
 		let tag = tag_and_set / sets;														// store the quotient as tag
 		let set_index = tag_and_set % sets;											// store the remainder as set_index
 		println!("the tag is: {} and the set_index is: {}", tag, set_index);
 		(tag, set_index)
-}*/
+}
+
+
+
 
 /*
 fn update_cache(cache: &cache, new_tag: &tag, new_set: &set, total_lines: &lines) -> String 
