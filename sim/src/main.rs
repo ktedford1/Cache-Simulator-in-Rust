@@ -3,21 +3,15 @@ use std::fs::File;
 use getopt::Opt;
 use std::error::Error;
 use std::io::{BufReader, BufRead};
-use std::num::ParseIntError;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
 	
   let args: Vec<String> = env::args().collect();
-	let (set_bits, lines, block_bits, trace_file) = parse_args(&args)?;
-
-	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
-  let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
-	let cache_size: u32 = sets_sum * lines * block_size;
+	let (set_bits, lines, block_bits, trace_file) = sim::parse_args::parse_them(&args)?;
 	println!("trace file is: {}", trace_file);
-	println!("sets_sum, block_size, and cache_size are: {}, {}, {}", sets_sum, block_size, cache_size);
+	println!("set_bits and block_bits are: {}, {}", set_bits, block_bits);
 
-	//let (tag, set_index) = process_address(&hex_address, &block_bits, &set_bits);
 	let block_bits = block_bits as u64;
 	let set_bits = set_bits as u64;
 	let _d = read_file_by_line(&trace_file, &block_bits, &set_bits);
@@ -27,28 +21,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
 
-	let trace_line = File::open(filepath)?;
-	let reader = BufReader::new(trace_line);
+	let file = File::open(filepath)?;					// use code from Coursework Lab 2, part 20 "Input/Output - Buffers: read a text file line by line"
+	let reader = BufReader::new(file);
 
-	for line in reader.lines() {
+	for line in reader.lines() {							// go through the trace file one line at a time
 		let unwrapped_line = line?;
-		let info:Vec<&str> = unwrapped_line.trim().split_whitespace().collect();
-		let operation = info[0];
-			if operation == "I" {
+		let info:Vec<&str> = unwrapped_line.trim().split_whitespace().collect();				// remove any leading or trailing whitespace and split the string in 2 at the space after the operation
+		let operation = info[0];								// assign the first item in the vector to a variable called operation
+			if operation == "I" {									// ignore any lines with the 'instruction' operation, as per the assignment specs
 				continue
 			}
-		let hex_address = info[1].split(',').next().unwrap();
+		let hex_address = info[1].split(',').next().unwrap();					// split the second item in the vector at the comma and keep the first part,the hex_address, and use .next() and .unwrap() because iterator
 		print!("Hex_address: {}  ", hex_address);
-		let binary_value = hex_to_64_bit_binary(&hex_address).expect("trouble");
+		let binary_value = u64::from_str_radix(&hex_address, 16).expect("trouble with converting hex_address");
 		let (tag, set_index) = process_address(&binary_value, &block_bits, &set_bits);
 	}
 
 	Ok(())
 }
 
-fn hex_to_64_bit_binary(hex_address: &str) -> Result<u64, ParseIntError> {
-	u64::from_str_radix(hex_address, 16) 
-}
 
 /*
 				let mut hits, misses, evictions == 0;
@@ -76,7 +67,7 @@ note: for stats, count the operations:L and S each count for 1, M counts for 2
 
 */
 
-
+/*
 #[allow(unused)]
 fn parse_args(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Error>> {
 	let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
@@ -127,6 +118,8 @@ fn print_usage_msg() {
   std::process::exit(0);
 }
 
+*/
+
 fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
 
 		let tag_and_set = binary_value >> block_bits;
@@ -137,7 +130,6 @@ fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64,
 		println!("tag: {} set: {}", tag, set_index);
 		(tag, set_index)
 }
-
 
 
 
