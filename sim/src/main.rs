@@ -6,15 +6,22 @@ use crate::parse_args::parse_args::*;
 
 mod parse_args;
 
+
 fn main() -> Result<(), Box<dyn Error>> {
 	
   let args: Vec<String> = env::args().collect();
-	let (set_bits, lines, block_bits, trace_file) = parse_them(&args)?;
+	let (set_bits, line_sum, block_bits, trace_file) = parse_them(&args)?;
 	println!("trace file is: {}", trace_file);
 	println!("set_bits and block_bits are: {}, {}", set_bits, block_bits);
 
 	let block_bits = block_bits as u64;
 	let set_bits = set_bits as u64;
+	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
+  let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
+	let cache_size: u32 = sets_sum * line_sum * block_size;
+
+	let mut new_cache = Cache::new(sets_sum, line_sum, block_size);
+
 	let _d = read_file_by_line(&trace_file, &block_bits, &set_bits);
 
 	Ok(())
@@ -36,7 +43,11 @@ fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result
 		print!("Hex_address: {}  ", hex_address);
 		let binary_value = u64::from_str_radix(&hex_address, 16).expect("trouble with converting hex_address");
 		let (tag, set_index) = process_address(&binary_value, &block_bits, &set_bits);
+
+		let new_entry = new_cache.update_cache(tag, set_index);
 	}
+
+
 
 	Ok(())
 }
@@ -68,38 +79,5 @@ note: for stats, count the operations:L and S each count for 1, M counts for 2
 */
 
 
-/*
-fn update_cache(cache: &cache, new_tag: &tag, new_set: &set, total_lines: &lines) -> String 
 
-	update the set.access_counter += 1;
-		loop through all the lines in the set:
-			if valid == 1 and set.tag == new_tag:				// when/how do I use self. ?
-				recency = access_counter;
-				return HIT and exit
-
-		loop through all the lines in the set:
-			if valid == 0:													// cache still has a space
-					set.tag = new_tag
-					recency = access_counter
-					valid = 1
-					return MISS and exit
-		
-		lru_tag = evict_tag(&cache, &set, &lines)
-		loop through all the lines in the set:
-			if line.tag == lru_tag:
-				line.tag = lru_tag
-				line.recency = 1;
-		return MISS and EVICTION		// HOW to return a variable number of results?? with an enum???
-
-
-fn evict_tag(&cache, &set, &lines)  -> returns smallest_recency_tag
-
-	smallest_recency_tag = set.line[0].recency
-	loop through all the lines in the set:
-			if line.recency < smallest_recency_tag:
-				smallest_recency_tag = line.recency
-	
-	return smallest_recency_tag
-
-*/
 

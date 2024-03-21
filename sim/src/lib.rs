@@ -1,6 +1,4 @@
 use std::env;
-use std::fs::File;
-use std::io::{BufReader, BufRead};
 
 pub struct Line {
     tag: u32,
@@ -18,35 +16,72 @@ pub struct Cache {
 	sets: Vec<Set>,
 }
 
-/*
 impl Cache {
-    // Create a new empty Cache
-    pub fn new() -> Self {
-        Cache { sets: Vec<Set>::new() }
-    }
 
-		required methods for cache:
-		calculate 
+	// Create an empty Cache with the specified dimensions
+	pub fn new_cache(sets_sum: u64, line_sum: u64, block_size: u64) -> Cache {
 
-    // Insert or update a word and its definition in the dictionary
-    pub fn insert_word(&mut self, word: &str, definition: &str) {
-        self.data.insert(word.to_string(), definition.to_string());
-    }
+		let mut empty_line = Line {
+			tag: 0,
+			set_index: 0,
+			valid: 0,
+			recency: 0,
+		}
 
-    // Look up the definition of a word in the dictionary
-    pub fn lookup_word(&self, word: &str) -> &str {
-        match self.data.get(word) {
-            Some(definition) => definition,
-            None => "Word doesn't exist",
-        }
-    }
+		let mut index = 0;
+		let mut empty_lines_in_set = Vec::new();
+		while index < line_sum {
+			empty_lines_in_set.push(empty_line);
+			index += 1;
+			}
+		let mut empty_set = Set {
+			lines: empty_lines_in_set,
+			access_counter: 0,
+		}
 
-    // Delete a word from the dictionary
-    pub fn delete_word(&mut self, word: &str) {
-        self.data.remove(word);
-    }
+		let mut empty_sets_in_cache = Vec::new();
+		while index < sets_sum {
+			empty_sets_in_cache.push(empty_set);
+			index += 1;
+		}
+		let mut empty_cache = Cache {
+			sets: empty_sets_in_cache,
+		}
+	}
+
+
+	pub fn update_cache(&mut self, new_tag: &tag, new_set: &set, line_sum: u64) -> String {
+
+	
+	update the set.access_counter += 1;
+		loop through all the lines in the set:
+			if valid == 1 and set.tag == new_tag:				// when/how do I use self. ?
+				recency = access_counter;
+				return HIT and exit
+
+		loop through all the lines in the set:
+			if valid == 0:													// cache still has a space
+					set.tag = new_tag
+					recency = access_counter
+					valid = 1
+					return MISS and exit
+		
+		lru_tag = evict_tag(&cache, &set, &lines)
+		loop through all the lines in the set:
+			if line.tag == lru_tag:
+				line.tag = lru_tag
+				line.recency = 1;
+		return MISS and EVICTION		// HOW to return a variable number of results?? with an enum???
+
 }
-	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
-  let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
-	let cache_size: u32 = sets_sum * lines * block_size;
 
+fn evict_tag(&cache, &set, &lines)  -> returns smallest_recency_tag
+
+	smallest_recency_tag = set.line[0].recency
+	loop through all the lines in the set:
+			if line.recency < smallest_recency_tag:
+				smallest_recency_tag = line.recency
+	
+	return smallest_recency_tag
+
+*/
