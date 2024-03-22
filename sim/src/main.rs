@@ -20,14 +20,35 @@ fn main() -> Result<(), Box<dyn Error>> {
   let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
 	let cache_size: u32 = sets_sum * line_sum * block_size;
 
-	let mut new_cache = Cache::new(sets_sum, line_sum, block_size);
+	let mut new_cache = Cache::new(sets_sum, line_sum);
 
-	let _d = read_file_by_line(&trace_file, &block_bits, &set_bits);
+	let mut hits, misses, evictions == 0;
+
+	let new_entry: String = read_file_by_line(&new_cache, &trace_file, &block_bits, &set_bits);
+
+	if new_entry == "HIT" && (operation == "L" || operation == "S") {
+		hits += 1;
+	}
+		else if new_entry == "MISS" && (operation == "L" || operation == "S") {
+			misses += 1
+		}
+		else if new_entry == "HIT" && (operation == "M") {
+			hits += 2
+		}
+		else if new_entry == "MISS" && (operation == "M") {
+			misses += 1;
+			hits += 1;
+		}
+		// if evictions then evictions += 1
+		// add verbose mode for checking?
+		// add final print statement
+		// count up memory accesses for stats - was there a method??
 
 	Ok(())
 }
 
-fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
+// change the return type to a string!!!
+fn read_file_by_line(new_cache: &Cache, filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
 
 	let file = File::open(filepath)?;					// use code from Coursework Lab 2, part 20 "Input/Output - Buffers: read a text file line by line"
 	let reader = BufReader::new(file);
@@ -44,39 +65,14 @@ fn read_file_by_line(filepath: &str, block_bits: &u64, set_bits: &u64) -> Result
 		let binary_value = u64::from_str_radix(&hex_address, 16).expect("trouble with converting hex_address");
 		let (tag, set_index) = process_address(&binary_value, &block_bits, &set_bits);
 
-		let new_entry = new_cache.update_cache(tag, set_index);
-	}
+		let new_entry: String = new_cache.update_cache(tag, set_index);
 
+		}
 
-
+	// return new_entry !!!
+	
 	Ok(())
 }
-
-/*
-				let mut hits, misses, evictions == 0;
-  
-								tag, set_index = process_address(&hex_address, &set_bits, &block_bits)
-								let mut attempt: String = update_cache(&cache, &tag, &set_index, &lines)
-								if operation == L or S and attempt == HIT: hits += 1
-								if operation == L or S and attempt == MISS: misses += 1
-								if operation == M and attempt == HIT: hits += 2
-								if operation == M and attempt == MISS: misses += 1 and hits += 1
-								if EVICTION: evictions += 1
-
-                    if verbose {
-                        println!("{}:{}: {}", operation, hex_address, attempt (has to also include eviction!!));
-                    }
-                }
-            }
-        }
-
-        println!(“Hits: {} Misses: {} Evictions: {}, hits, misses, evictions);
-    } else {
-        eprintln!("Error opening the file '{}'", filename);
-    
-note: for stats, count the operations:L and S each count for 1, M counts for 2
-
-*/
 
 
 
