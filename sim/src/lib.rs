@@ -14,15 +14,11 @@ pub struct Set {
 #[derive(Debug, Clone)]
 pub struct Cache {
 	sets: Vec<Set>,
-	total_sets: u32,
-	total_lines: u32,
+	pub hits: u32,
+	pub misses: u32,
+	pub evictions: u32,
 }
 
-pub enum QueryResult {
-	Hit,
-	Miss,
-	MissEviction,
-}
 
 impl Cache {
 
@@ -55,55 +51,67 @@ impl Cache {
 		};
 		let new_cache = Cache {
 			sets: all_sets,
-			total_sets: sets_sum,
-			total_lines: line_sum,
+			hits: 0,
+			misses: 0,
+			evictions: 0,
 		};
 		new_cache
 	}
 
-	pub fn update_cache(&mut self, tag_query: u64, set_query: u64) -> Option<QueryResult> {
+	pub fn update_cache(&mut self, tag_query: u64, set_query: u64) {
 
 		let current_set = &mut self.sets[set_query as usize];
 		current_set.access_counter += 1;
+		let mut access: bool = false;
 	
-		// check if the set_index/tag are already in the cache by looking in the specified set
-		// for a line with the same tag and the valid set to true
+		// is the tag_query in the specified cache set already?
 		for line in &mut current_set.lines {
 			if line.valid == true && line.tag == tag_query {	
 				line.recency = current_set.access_counter;
-				return Some(QueryResult::Hit);
+				self.hits += 1;
+				access = true;
+				print!("hit ");
 			}
 		}
 
-		// if there is no hit on the address, check if there is space in the specified set by 
-		// checking if any valid bits are still set to false and then entering the tag and changing the valid to true
+		// if the tag_query is not in the set, is there a line available in the set?
 		for line in &mut current_set.lines {
 			if line.valid == false {	
 				line.valid = true;
 				line.tag = tag_query;
 				line.recency = current_set.access_counter;
-				return Some(QueryResult::Miss);
+				self.misses += 1;
+				access = true;
+				print!("miss ");
 			}
 		}
 
-		let mut lru = u32::MAX;
-		let mut lru_tag = 0;
+	// if the tag_query is not in the set, and there is no line available, then evict the LRU line
+		if access == false {
+			let mut lru = u32::MAX;
+			let mut lru_tag = 0;
 
-		for line in &mut current_set.lines {
-			if line.recency < lru {
-				lru = line.recency;
-				lru_tag = line.tag;
+			for line in &mut current_set.lines {
+				if line.recency < lru {
+					lru = line.recency;
+					lru_tag = line.tag;
+				}
+			}
+				
+			for line in &mut current_set.lines {
+				if line.tag == lru_tag {	
+					line.tag = tag_query;
+					line.recency = current_set.access_counter;
+					self.misses += 1;
+					self.evictions += 1;
+					print!("miss eviction ");
+				}
 			}
 		}
-		println!("the lru_tag is: {}", lru_tag);
-			
-		for line in &mut current_set.lines {
-			if line.tag == lru_tag {	
-				line.tag = tag_query;
-				line.recency = current_set.access_counter;
-				return Some(QueryResult::MissEviction);
-			}
-		}
-		None
 	} 
+
+	pub fn extra_hit_for_modify(&mut self) {
+		self.hits += 1;
+		print!("hit");
+	}
 }

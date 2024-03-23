@@ -59,7 +59,6 @@ pub mod parse_args {
 		let sets = sets as u64;
 		let tag = tag_and_set / sets;														// store the quotient as tag
 		let set_index = tag_and_set % sets;											// store the remainder as set_index
-		println!("tag: {} set: {}", tag, set_index);
 		(tag, set_index)
 	}
 

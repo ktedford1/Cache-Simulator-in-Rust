@@ -3,6 +3,7 @@ use std::fs::File;
 use std::error::Error;
 use std::io::{BufReader, BufRead};
 use crate::parse_args::parse_args::*;
+use sim::Cache;
 
 mod parse_args;
 
@@ -13,30 +14,23 @@ fn main() -> Result<(), Box<dyn Error>> {
 	let (set_bits, line_sum, block_bits, trace_file) = parse_them(&args)?;
 	let sets_sum = 2_u32.pow(set_bits);							// sets_sum == S == total sets
   let block_size = 2_u32.pow(block_bits);      		// block_size == B == total bytes per block
-	let cache_size: u32 = sets_sum * line_sum * block_size;
-	println!("sets_sum, block_size, and cache_size are {}, {}, and {}", sets_sum, block_size, cache_size);
+	let _cache_size: u32 = sets_sum * line_sum * block_size;
 
 	let set_bits = set_bits as u64;
 	let block_bits = block_bits as u64;
 	let mut new_cache = sim::Cache::new_cache(sets_sum, line_sum);
 	
-	let mut hits = 0;
-	let mut misses = 0;
-	let mut evictions = 0;
-	
-	let _d = read_file_by_line(&new_cache, &trace_file, &block_bits, &set_bits);
+	let _d = read_file_by_line(&mut new_cache, &trace_file, &block_bits, &set_bits);
 
-
-
-	println!("hits: {} misses: {} evictions: {}", hits, misses, evictions);
+	println!("hits:{} misses:{} evictions:{}", new_cache.hits, new_cache.misses, new_cache.evictions);
 
 	// verbose? stats?
 
 	Ok(())
 }
 
-// change the return type to a string!!!
-fn read_file_by_line(new_cache: &Cache, filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<String, Box<dyn Error>> {
+
+fn read_file_by_line(new_cache: &mut Cache, filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
 
 	let file = File::open(filepath)?;					// use code from Coursework Lab 2, part 20 "Input/Output - Buffers: read a text file line by line"
 	let reader = BufReader::new(file);
@@ -53,39 +47,13 @@ fn read_file_by_line(new_cache: &Cache, filepath: &str, block_bits: &u64, set_bi
 		
 		let (tag, set_index) = process_address(&binary_value, block_bits, set_bits);
 
-		let new_entry: String = new_cache.update_cache(tag, set_index);
+		print!("{} ", unwrapped_line);
+		new_cache.update_cache(tag, set_index);
 
-
-
-	if new_entry == "Hit" && (operation == "L" || operation == "S") {
-		hits += 1;
+		if operation == "M" {
+			new_cache.extra_hit_for_modify();
+		}
+		println!("");
 	}
-		else if new_entry == "Miss" && (operation == "L" || operation == "S") {
-			misses += 1;
-		}
-		else if new_entry == "MissEviction" && (operation == "L" || operation == "S") {
-			misses += 1;
-			evictions += 1;
-		}
-		else if new_entry == "Hit" && (operation == "M") {
-			hits += 2;
-		}
-		else if new_entry == "Miss" && (operation == "M") {
-			misses += 1;
-			hits += 1;	
-		}
-		else if new_entry == "MissEviction" && (operation == "M") {
-			misses += 1;
-			hits += 1;
-			evictions += 1;
-		}
-
-
-		}
-	
-	Ok((new_entry))
+	Ok(())
 }
-
-
-
-
