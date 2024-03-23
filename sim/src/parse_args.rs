@@ -4,7 +4,7 @@ pub mod parse_args {
 	use std::error::Error;
 
 	#[allow(unused)]
-	pub fn parse_them(args: &Vec<String>) -> Result<(u32, u32, u32, String), Box<dyn Error>> {
+	pub fn parse_them(args: &Vec<String>) -> Result<(u64, u64, u64, String), Box<dyn Error>> {
 		let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
 		let mut h = false;						// help flag
 		let mut v = false;						// verbose flag
@@ -36,7 +36,7 @@ pub mod parse_args {
 			print_usage_msg();
 			return Err("other problem".into());
 		}
-		Ok((s as u32, e as u32, b as u32, t))
+		Ok((s as u64, e as u64, b as u64, t))
 	}
 
 
