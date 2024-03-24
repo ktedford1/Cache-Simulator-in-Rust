@@ -3,15 +3,18 @@ pub mod parse_args {
 	use getopt::Opt;
 	use std::error::Error;
 
+	// code citation: code for 'fn parse_them' was essentially copied from https://docs.rs/getopt/latest/getopt/struct.Parser.html
+	// and https://crates.io/crates/getopt and slightly modified to fit the expected arguments for the cache sim
+
 	#[allow(unused)]
 	pub fn parse_them(args: &Vec<String>) -> Result<(u64, u64, u64, String), Box<dyn Error>> {
 		let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
 		let mut h = false;						// help flag
-		let mut v = false;						// verbose flag
+		let mut v = false;						// verbose flag	- Note: the verbose function is not set up yet
 		let mut s = String::new();		// set bits
 		let mut e = String::new();		// total lines per set
 		let mut b = String::new();		// block bits
-		let mut t = String::new();		// filepath to text file of Valgrind memory trace; add valid. to make sure it's a real file??
+		let mut t = String::new();		// filepath to text file of Valgrind memory trace, e.g. "/home/codio/workspace/traces/yi.trace"
 
 		loop {
 			match opts.next().transpose()?{
@@ -23,19 +26,21 @@ pub mod parse_args {
 					Opt('E', Some(arg)) => e = arg.clone(),
 					Opt('b', Some(arg)) => b = arg.clone(),
 					Opt('t', Some(arg)) => t = arg.clone(),
-					_ => return Err("whatever".into()),
+					_ => unreachable!(),
 				},
 			}
 		}
 
+		// to rule out negative numbers as arguments, 's', 'e', and 'b' have to be signed integers, so temporarily convert them to 'i32'
 		let s: i32 = s.parse()?;			// convert the arg 's' from a string to an int
 		let e: i32 = e.parse()?;			// convert the arg 'e' from a string to an int
 		let b: i32 = b.parse()?;			// convert the arg 'b' from a string to an int
 
+		// if help is requested, or if the number of sets or lines is less than 1, or if there is no textfile, print the usage msg
 		if h || s < 1 || e < 1 || t.is_empty() {
 			print_usage_msg();
-			return Err("other problem".into());
 		}
+
 		Ok((s as u64, e as u64, b as u64, t))
 	}
 
