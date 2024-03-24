@@ -1,30 +1,29 @@
 #[derive(Debug, Clone)]
 pub struct Line {
-    tag: u64,
+    tag: usize,
 		valid: bool,
-		recency: u32,
+		recency: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct Set {
 	lines: Vec<Line>,
-	access_counter: u32,
+	access_counter: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct Cache {
 	sets: Vec<Set>,
-	pub hits: u32,
-	pub misses: u32,
-	pub evictions: u32,
+	pub hits: usize,
+	pub misses: usize,
+	pub evictions: usize,
 }
 
 
 impl Cache {
 
 	// Create an empty Cache with the specified dimensions
-
-	pub fn new_cache(sets_sum: u32, line_sum: u64) -> Cache {
+	pub fn new_cache(sets_sum: usize, line_sum: usize) -> Cache {
 
 		let one_line = Line {
 			tag: 0,
@@ -32,23 +31,13 @@ impl Cache {
 			recency: 0,
 		};
 
-		let mut index = 0;
-		let mut all_lines = Vec::new();
-		while index < line_sum {
-			all_lines.push(one_line.clone());
-			index += 1;
-			};
+		let all_lines = vec![one_line; line_sum];
 		let one_set = Set {
 			lines: all_lines,
 			access_counter: 0,
 		};
-
-		let mut index = 0;
-		let mut all_sets = Vec::new();
-		while index < sets_sum {
-			all_sets.push(one_set.clone());
-			index += 1;
-		};
+		
+		let all_sets = vec![one_set; sets_sum];
 		let new_cache = Cache {
 			sets: all_sets,
 			hits: 0,
@@ -58,12 +47,12 @@ impl Cache {
 		new_cache
 	}
 
-	pub fn update_cache(&mut self, tag_query: u64, set_query: u64) {
+	pub fn update_cache(&mut self, tag_query: usize, set_query: usize) {
 
-		// Note: for verbose mode, de-comment the 'print!' lines numbered #76, #88, #111, #119
+		// Note: for verbose mode, de-comment the 'print!' lines numbered #65, #77, #100, #108
 
 		// set 'current_set' to the index of the set in the query
-		let current_set = &mut self.sets[set_query as usize];
+		let current_set = &mut self.sets[set_query];
 
 		// to implement the 'LRU' eviction policy: update the counter for the specified set every time there is an access query to the cache
 		current_set.access_counter += 1;
@@ -91,7 +80,7 @@ impl Cache {
 		}
 
 	// if the tag_query is not in the set, and there is no line available, then identify the least recently used (LRU) line...
-		let mut lru = u32::MAX;
+		let mut lru = usize::MAX;
 		let mut lru_tag = 0;
 
 		for line in &mut current_set.lines {

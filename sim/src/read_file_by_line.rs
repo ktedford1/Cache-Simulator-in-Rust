@@ -5,7 +5,7 @@ pub mod read_file_by_line {
 	use sim::Cache;
 	use std::error::Error;
 
-	pub fn read_file_by_line(new_cache: &mut Cache, filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
+	pub fn read_file_by_line(new_cache: &mut Cache, filepath: &str, block_bits: &usize, set_bits: &usize) -> Result<(), Box<dyn Error>> {
 
 		let file = File::open(filepath)?;					// use code from Coursework Lab 2, part 20 "Input/Output - Buffers: read a text file line by line"
 		let reader = BufReader::new(file);
@@ -38,7 +38,7 @@ pub mod read_file_by_line {
 	}
 
 
-	pub fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
+	pub fn process_address(binary_value: &u64, block_bits: &usize, set_bits:&usize) -> (usize, usize) {
 
 		let tag_and_set = binary_value >> block_bits;			// right-shift the binary form of the address by 'b' or 'block_bits' number of bits to get rid of them
 		let sets = 2_u32.pow(*set_bits as u32);						// get the total number of sets (from 's', the set_bits) by calculating 2^s
@@ -47,6 +47,6 @@ pub mod read_file_by_line {
 		// split the binary number 'tag_and_set' in 2 parts
 		let tag = tag_and_set / sets;											// divide the 'tag_and_set' part of the binary address by the number of sets and store the quotient as 'tag'
 		let set_index = tag_and_set % sets;								// divide the 'tag_and_set' part of the binary address by the number of sets and store the remainder as 'set_index'
-		(tag, set_index)
+		(tag as usize, set_index as usize)
 	}
 }

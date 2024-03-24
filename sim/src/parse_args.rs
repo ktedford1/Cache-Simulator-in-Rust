@@ -7,7 +7,7 @@ pub mod parse_args {
 	// and https://crates.io/crates/getopt and slightly modified to fit the expected arguments for the cache sim
 
 	#[allow(unused)]
-	pub fn parse_them(args: &Vec<String>) -> Result<(u64, u64, u64, String), Box<dyn Error>> {
+	pub fn parse_them(args: &Vec<String>) -> Result<(usize, usize, usize, String), Box<dyn Error>> {
 		let mut opts = getopt::Parser::new(&args, "hvs:E:b:t:");
 		let mut h = false;						// help flag
 		let mut v = false;						// verbose flag	- Note: the verbose function is not set up yet
@@ -41,7 +41,7 @@ pub mod parse_args {
 			print_usage_msg();
 		}
 
-		Ok((s as u64, e as u64, b as u64, t))
+		Ok((s as usize, e as usize, b as usize, t))
 	}
 
 
