@@ -4,7 +4,6 @@ pub mod read_file_by_line {
 	use std::io::{BufReader, BufRead};
 	use sim::Cache;
 	use std::error::Error;
-	use crate::process_address;
 
 	pub fn read_file_by_line(new_cache: &mut Cache, filepath: &str, block_bits: &u64, set_bits: &u64) -> Result<(), Box<dyn Error>> {
 
@@ -21,6 +20,8 @@ pub mod read_file_by_line {
 			let hex_address = info[1].split(',').next().unwrap();					// split the second item in the vector at the comma and keep the first part,the hex_address, and use .next() and .unwrap() because iterator
 			let binary_value = u64::from_str_radix(&hex_address, 16)?;
 			let (tag, set_index) = process_address(&binary_value, block_bits, set_bits);
+
+			// Note: for verbose mode, decomment lines 25 and 30
 			// print!("{} ", unwrapped_line);
 			new_cache.update_cache(tag, set_index);
 			if operation == "M" {
@@ -29,5 +30,15 @@ pub mod read_file_by_line {
 			// println!("");
 		}
 		Ok(())
+	}
+
+
+	pub fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
+	let tag_and_set = binary_value >> block_bits;
+	let sets = 2_u32.pow(*set_bits as u32);	
+	let sets = sets as u64;
+	let tag = tag_and_set / sets;														// store the quotient as tag
+	let set_index = tag_and_set % sets;											// store the remainder as set_index
+	(tag, set_index)
 	}
 }

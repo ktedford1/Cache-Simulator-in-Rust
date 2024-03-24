@@ -51,15 +51,4 @@ pub mod parse_args {
 		println!("-t <tracefile>: Name of the trace to replay");
 		std::process::exit(0);
 	}
-
-
-	pub fn process_address(binary_value: &u64, block_bits: &u64, set_bits:&u64) -> (u64, u64) {
-		let tag_and_set = binary_value >> block_bits;
-		let sets = 2_u32.pow(*set_bits as u32);	
-		let sets = sets as u64;
-		let tag = tag_and_set / sets;														// store the quotient as tag
-		let set_index = tag_and_set % sets;											// store the remainder as set_index
-		(tag, set_index)
-	}
-
 }

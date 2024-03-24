@@ -60,8 +60,12 @@ impl Cache {
 
 	pub fn update_cache(&mut self, tag_query: u64, set_query: u64) {
 
-		// Note: for verbose mode, decomment lines 72, 84, 106, 113
+		// Note: for verbose mode, de-comment the 'print!' lines numbered #76, #88, #111, #119
+
+		// set 'current_set' to the index of the set in the query
 		let current_set = &mut self.sets[set_query as usize];
+
+		// to implement the 'LRU' eviction policy: update the counter for the specified set every time there is an access query to the cache
 		current_set.access_counter += 1;
 	
 		// is the tag_query in the specified cache set already?
@@ -86,7 +90,7 @@ impl Cache {
 			}
 		}
 
-	// if the tag_query is not in the set, and there is no line available, then evict the LRU line
+	// if the tag_query is not in the set, and there is no line available, then identify the least recently used (LRU) line...
 		let mut lru = u32::MAX;
 		let mut lru_tag = 0;
 
@@ -96,7 +100,8 @@ impl Cache {
 				lru_tag = line.tag;
 			}
 		}
-				
+
+	// ...and	replace it with the current tag_query
 		for line in &mut current_set.lines {
 			if line.tag == lru_tag {	
 				line.tag = tag_query;
@@ -108,6 +113,7 @@ impl Cache {
 		}
 	}
 
+	// if the operation of the access/query is 'M' for modify, then an extra 'hit' is added to every access
 	pub fn extra_hit_for_modify(&mut self) {
 		self.hits += 1;
 		//print!("hit");
