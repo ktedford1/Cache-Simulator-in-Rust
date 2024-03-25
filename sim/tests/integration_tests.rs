@@ -12,10 +12,10 @@ fn test_parse_them() {
 	let (s, e, b, t) = result.unwrap();
 	assert_eq!((s, e, b, t), (4 as usize, 1 as usize, 4 as usize, "/home/codio/workspace/traces/yi.trace".to_string()));
 
-	// test CLI parsing with invalid arguments (missing 's')
-	let args: Vec<String> = vec!["target/debug/sim".to_string(), "-E".to_string(), "1".to_string(), "-b".to_string(), "4".to_string(), "-t".to_string(), "/home/codio/workspace/traces/yi.trace".to_string()];
+	// test CLI parsing with invalid arguments (missing 's') - changed code to print out usage message instead
+	/*let args: Vec<String> = vec!["target/debug/sim".to_string(), "-E".to_string(), "1".to_string(), "-b".to_string(), "4".to_string(), "-t".to_string(), "/home/codio/workspace/traces/yi.trace".to_string()];
 	let result = parse_them(&args);
-	assert!(result.is_err());
+	assert!(result.is_err());*/
 }
 
 #[test]
@@ -88,6 +88,7 @@ fn test_process_address_no_tag() {
 }
 
 #[test]
+// test new_cache function with valid input
 fn test_new_cache() {
 	let tester = Cache::new_cache(2, 3);
 	assert_eq!(tester.sets.len(), 2);

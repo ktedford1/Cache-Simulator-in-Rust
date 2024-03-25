@@ -143,13 +143,18 @@ pub mod parse_args {
 			}
 		}
 
+		// if arguments are missing, or if help is requested ('-h'), print usage message
+		if h || s.is_empty() || e.is_empty() || b.is_empty() || t.is_empty() {
+			print_usage_msg();
+		}
+
 		// to rule out negative numbers as arguments, 's', 'e', and 'b' have to be signed integers, so temporarily convert them to 'i32'
 		let s: i32 = s.parse()?;			// convert the arg 's' from a string to an int
 		let e: i32 = e.parse()?;			// convert the arg 'e' from a string to an int
 		let b: i32 = b.parse()?;			// convert the arg 'b' from a string to an int
 
-		// if help is requested, or if the number of sets or lines is less than 1, or if there is no textfile, print the usage msg
-		if h || s < 1 || e < 1 || t.is_empty() {
+		// if the number of sets or lines is less than 1, or if block_bits is negative, print usage message
+		if s < 1 || e < 1 || b < 0  {
 			print_usage_msg();
 		}
 
